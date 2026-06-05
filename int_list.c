@@ -66,11 +66,11 @@ bool int_list_push(IntList *list, int val) {
   return true;
 }
 
-// Pop from the list into ret_value arg
+// Pop from the list into ret_value arg (can't be NULL)
 // returns false if pop attempted on empty list
 // doesn't touch ret_value on failure
 bool int_list_pop(IntList *list, int *ret_val) {
-  if (list->len == 0)
+  if (list->len == 0 || ret_val == NULL)
     return false;
   list->len--;
   *ret_val = list->data[list->len];

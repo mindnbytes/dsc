@@ -69,6 +69,7 @@ static void test_non_destructive_free(void) {
 
 static void test_create_destroy(void) {
   IntList *l = int_list_create();
+  assert(l != NULL);
   assert(int_list_push(l, 42));
   assert(l->data[0] == 42);
   int_list_destroy(l);
@@ -76,6 +77,7 @@ static void test_create_destroy(void) {
 
 static void test_pop(void) {
   IntList *l = int_list_create();
+  assert(l != NULL);
   assert(int_list_push(l, 1));
 
   int val;
@@ -83,6 +85,35 @@ static void test_pop(void) {
   assert(!int_list_pop(l, &val));
   assert(val == 1);
   assert(l->len == 0);
+  int_list_destroy(l);
+}
+
+static void test_pop_null_ret_val(void) {
+  IntList *l = int_list_create();
+  assert(l != NULL);
+  assert(int_list_push(l, 123));
+  int *ret_val = NULL;
+  assert(!int_list_pop(l, ret_val));
+  assert(l->data[0] == 123);
+  assert(ret_val == NULL);
+  int_list_destroy(l);
+}
+
+static void test_pop_lifo(void) {
+  IntList *l = int_list_create();
+  assert(l != NULL);
+
+  int start = 0;
+  int end = 10;
+  for (int i = start; i < end; i++) {
+    assert(int_list_push(l, i));
+  }
+  int ret_val;
+  while (end > start) {
+    end--;
+    assert(int_list_pop(l, &ret_val));
+    assert(ret_val == end);
+  }
   int_list_destroy(l);
 }
 
@@ -94,6 +125,8 @@ int main(void) {
   RUN_TEST(test_non_destructive_free);
   RUN_TEST(test_create_destroy);
   RUN_TEST(test_pop);
+  RUN_TEST(test_pop_null_ret_val);
+  RUN_TEST(test_pop_lifo);
 
   printf("All tests passed.\n");
   return 0;

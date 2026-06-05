@@ -55,12 +55,34 @@ static void test_push_multiple(void) {
     int_list_free(&l);
 }
 
+static void test_non_destructive_free(void) {
+    IntList l = INT_LIST_INIT;
+    int first = 24;
+    int second = 42;
+    assert(int_list_push(&l, first));
+    int_list_free(&l);
+
+    assert(int_list_push(&l, second));
+    assert(l.len == 1);
+    assert(l.data[0] == second);
+    int_list_free(&l);
+}
+
+static void test_create_destroy(void) {
+    IntList* l = int_list_create();
+    assert(int_list_push(l, 42));
+    assert(l->data[0] == 42);
+    int_list_destroy(l);
+}
+
 
 int main(void) {
     RUN_TEST(test_init_macro);
     RUN_TEST(test_init);
     RUN_TEST(test_push_to_empty);
     RUN_TEST(test_push_multiple);
+    RUN_TEST(test_non_destructive_free);
+    RUN_TEST(test_create_destroy);
 
     printf("All tests passed.\n");
     return 0;

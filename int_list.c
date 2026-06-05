@@ -66,6 +66,17 @@ bool int_list_push(IntList *list, int val) {
   return true;
 }
 
+// Pop from the list into ret_value arg
+// returns false if pop attempted on empty list
+// doesn't touch ret_value on failure
+bool int_list_pop(IntList *list, int *ret_val) {
+  if (list->len == 0)
+    return false;
+  list->len--;
+  *ret_val = list->data[list->len];
+  return true;
+}
+
 // Private helper, grow internal array
 // return false if it fais, true otherwise
 static bool int_list_grow(IntList *list) {

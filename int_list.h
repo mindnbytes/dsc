@@ -22,5 +22,6 @@ void int_list_free(IntList *list);
 IntList *int_list_create(void);
 void int_list_destroy(IntList *list);
 bool int_list_push(IntList *list, int val);
+bool int_list_pop(IntList *list, int *ret_val);
 
 #endif

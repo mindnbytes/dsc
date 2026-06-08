@@ -45,13 +45,13 @@ bool list_init(List *l, size_t elem_size) {
 
 // Push the shallow copy of the element
 // on the list.
+// - val must point to at least l->elem_size readable bytes.
 // - returns false on failure
 // - returns true on success
 bool list_push(List *l, const void *val) {
   if (l == NULL || val == NULL)
     return false;
-  if (sizeof(*val) != l->elem_size)
-    return false;
+
   if (l->len == l->cap) {
     if (!list_grow(l))
       return false;

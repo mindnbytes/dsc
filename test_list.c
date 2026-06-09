@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define RUN_TEST(fn)                                                           \
   do {                                                                         \
@@ -50,11 +51,23 @@ static void test_push_fail_grow(void) {
   assert(list_clear(&a));
 }
 
+static void test_push_success(void) {
+  List a;
+  assert(list_init(&a, sizeof(float)));
+  for (float f = 0; f < 10; f++) {
+    assert(list_push(&a, &f));
+    unsigned char *top = a.data + (a.len - 1) * a.elem_size;
+    assert(memcmp(&f, top, a.elem_size) == 0);
+  }
+  assert(list_clear(&a));
+}
+
 int main(void) {
   RUN_TEST(test_init_pass);
   RUN_TEST(test_init_fail);
   RUN_TEST(test_push_fail_null);
   RUN_TEST(test_push_fail_grow);
+  RUN_TEST(test_push_success);
 
   puts("All tests passed.");
   return EXIT_SUCCESS;

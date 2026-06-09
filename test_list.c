@@ -53,12 +53,14 @@ static void test_push_fail_grow(void) {
 
 static void test_push_success(void) {
   List a;
+  float size = 10;
   assert(list_init(&a, sizeof(float)));
-  for (float f = 0; f < 10; f++) {
+  for (float f = 0; f < size; f++) {
     assert(list_push(&a, &f));
     unsigned char *top = a.data + (a.len - 1) * a.elem_size;
     assert(memcmp(&f, top, a.elem_size) == 0);
   }
+  assert(a.len == (size_t)size);
   assert(list_clear(&a));
 }
 

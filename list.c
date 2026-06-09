@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,6 +18,9 @@ static bool list_grow(List *list) {
   if (list->cap > SIZE_MAX / 2 / list->elem_size)
     return false;
   size_t new_cap = list->cap == 0 ? 8 : list->cap * 2;
+  // if we have very large element size
+  if (list->elem_size > SIZE_MAX / new_cap)
+    return false;
 
   unsigned char *new_data = realloc(list->data, new_cap * list->elem_size);
   if (new_data == NULL)
@@ -74,6 +78,7 @@ bool list_clear(List *l) {
   free(l->data);
   l->cap = 0;
   l->len = 0;
+  l->data = NULL;
   // keep elem_size
 
   return true;

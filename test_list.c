@@ -76,7 +76,7 @@ static void test_clear_pass(void) {
   assert(list_push(&a, &val));
   assert(a.len == 1);
   assert(list_clear(&a));
-  assert(a.len == 0 && a.cap == 0);
+  assert(a.len == 0 && a.cap == 0 && a.data == NULL);
   assert(a.elem_size == sizeof(long));
 }
 

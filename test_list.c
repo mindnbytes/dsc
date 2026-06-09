@@ -80,6 +80,17 @@ static void test_clear_pass(void) {
   assert(a.elem_size == sizeof(long));
 }
 
+static void test_clear_and_use(void) {
+  List a;
+  int x = 21;
+  int y = 42;
+  assert(list_init(&a, sizeof(int)));
+  assert(list_push(&a, &x));
+  assert(list_clear(&a));
+  assert(list_push(&a, &y));
+  assert(list_clear(&a));
+}
+
 int main(void) {
   RUN_TEST(test_init_pass);
   RUN_TEST(test_init_fail);
@@ -88,6 +99,7 @@ int main(void) {
   RUN_TEST(test_push_success);
   RUN_TEST(test_clear_fail);
   RUN_TEST(test_clear_pass);
+  RUN_TEST(test_clear_and_use);
 
   puts("All tests passed.");
   return EXIT_SUCCESS;

@@ -62,12 +62,30 @@ static void test_push_success(void) {
   assert(list_clear(&a));
 }
 
+static void test_clear_fail(void) {
+  List *a = NULL;
+  assert(!list_clear(a));
+}
+
+static void test_clear_pass(void) {
+  List a;
+  assert(list_init(&a, sizeof(long)));
+  long val = 42;
+  assert(list_push(&a, &val));
+  assert(a.len == 1);
+  assert(list_clear(&a));
+  assert(a.len == 0 && a.cap == 0);
+  assert(a.elem_size == sizeof(long));
+}
+
 int main(void) {
   RUN_TEST(test_init_pass);
   RUN_TEST(test_init_fail);
   RUN_TEST(test_push_fail_null);
   RUN_TEST(test_push_fail_grow);
   RUN_TEST(test_push_success);
+  RUN_TEST(test_clear_fail);
+  RUN_TEST(test_clear_pass);
 
   puts("All tests passed.");
   return EXIT_SUCCESS;

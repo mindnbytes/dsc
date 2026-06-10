@@ -41,15 +41,16 @@ static void test_push_fail_null(void) {
   assert(list_clear(&b));
 }
 
-static void test_push_fail_grow(void) {
+static void test_push_fail_huge_elem_size(void) {
   List a;
-  assert(list_init(&a, sizeof(int)));
-  // make cap artificially large
-  size_t size = SIZE_MAX / 2 / a.elem_size;
-  a.cap = size + 1;
-  a.len = a.cap;
-  int val = 2;
-  assert(!list_push(&a, &val));
+  // list_grow fails before list_push reads from dummy.
+  unsigned char dummy = 0;
+
+  assert(list_init(&a, SIZE_MAX / 8 + 1));
+  assert(!list_push(&a, &dummy));
+  assert(a.len == 0);
+  assert(a.cap == 0);
+  assert(a.data == NULL);
   assert(list_clear(&a));
 }
 
@@ -143,7 +144,7 @@ int main(void) {
   RUN_TEST(test_init_pass);
   RUN_TEST(test_init_fail);
   RUN_TEST(test_push_fail_null);
-  RUN_TEST(test_push_fail_grow);
+  RUN_TEST(test_push_fail_huge_elem_size);
   RUN_TEST(test_push_success);
   RUN_TEST(test_pop_fail_null);
   RUN_TEST(test_pop_fail_null_dst);

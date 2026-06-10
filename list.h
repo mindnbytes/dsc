@@ -20,6 +20,7 @@ typedef struct {
 
 bool list_init(List *l, size_t elem_size);
 bool list_push(List *l, const void *val);
+bool list_pop(List *l, void *dst);
 bool list_clear(List *l);
 
 #endif

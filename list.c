@@ -3,6 +3,7 @@
  * If an element contains pointers, the pointed-to data remains owned by the
  * caller. list_clear only releases the list's internal storage.
  */
+
 #include "list.h"
 
 #include <stdbool.h>
@@ -67,8 +68,25 @@ bool list_push(List *l, const void *val) {
   return true;
 }
 
+// Pop element from the top of the list.
+// Write resutlt to pointed by dst memory.
+// Assumes dst point to at least elem_size
+// bytes of writable memory.
+// On success return true.
+// Fail on NULL pointers and empty list.
+bool list_pop(List *l, void *dst) {
+  if (!l || !dst || l->len == 0) {
+    return false;
+  }
+  l->len--;
+  unsigned char *src = l->data + l->len * l->elem_size;
+  memcpy(dst, src, l->elem_size);
+  return true;
+}
+
 // Clears the list to the state
 // of freshly initialized one.
+// Keep element size, can be reused.
 // return false on failure,
 // true otherwise
 // fails if l == null

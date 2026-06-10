@@ -13,6 +13,7 @@
     fn();                                                                      \
   } while (0)
 
+// init
 static void test_init_pass(void) {
   List a;
   assert(list_init(&a, 2));
@@ -28,6 +29,7 @@ static void test_init_fail(void) {
   assert(!list_init(&b, 0));
 }
 
+// push
 static void test_push_fail_null(void) {
   List *a = NULL;
   int var = 11;
@@ -64,6 +66,51 @@ static void test_push_success(void) {
   assert(list_clear(&a));
 }
 
+// pop
+static void test_pop_fail_null(void) {
+  List *a = NULL;
+  int a_val;
+  assert(!list_pop(a, &a_val));
+}
+
+static void test_pop_fail_null_dst(void) {
+  List a;
+  assert(list_init(&a, sizeof(int)));
+  int val = 22;
+  assert(list_push(&a, &val));
+  int *dst = NULL;
+  assert(!list_pop(&a, dst));
+  assert(list_clear(&a));
+}
+
+static void test_pop_one_fail_empty(void) {
+  List a;
+  assert(list_init(&a, sizeof(int)));
+  int val = 22;
+  assert(list_push(&a, &val));
+  int dst;
+  assert(list_pop(&a, &dst));
+  assert(dst == val);
+  assert(!list_pop(&a, &dst));
+  assert(list_clear(&a));
+}
+
+static void test_pop_many(void) {
+  List a;
+  assert(list_init(&a, sizeof(int)));
+  int size = 10;
+  for (int i = 0; i < size; i++) {
+    assert(list_push(&a, &i));
+  }
+  int dst;
+  for (int i = size - 1; i >= 0; i--) {
+    assert(list_pop(&a, &dst));
+    assert(dst == i);
+  }
+  assert(list_clear(&a));
+}
+
+// clear
 static void test_clear_fail(void) {
   List *a = NULL;
   assert(!list_clear(a));
@@ -80,6 +127,7 @@ static void test_clear_pass(void) {
   assert(a.elem_size == sizeof(long));
 }
 
+// reuse
 static void test_clear_and_use(void) {
   List a;
   int x = 21;
@@ -97,6 +145,10 @@ int main(void) {
   RUN_TEST(test_push_fail_null);
   RUN_TEST(test_push_fail_grow);
   RUN_TEST(test_push_success);
+  RUN_TEST(test_pop_fail_null);
+  RUN_TEST(test_pop_fail_null_dst);
+  RUN_TEST(test_pop_one_fail_empty);
+  RUN_TEST(test_pop_many);
   RUN_TEST(test_clear_fail);
   RUN_TEST(test_clear_pass);
   RUN_TEST(test_clear_and_use);

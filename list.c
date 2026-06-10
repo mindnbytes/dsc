@@ -51,6 +51,7 @@ bool list_init(List *l, size_t elem_size) {
 // Push the shallow copy of the element
 // on the list.
 // - val must point to at least l->elem_size readable bytes.
+// - val must not point to internal list storage
 // - returns false on failure
 // - returns true on success
 bool list_push(List *l, const void *val) {

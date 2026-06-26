@@ -6,10 +6,13 @@ Minimal C implementations of common data structures for learning C engineering.
 
 - `IntList`: growable list of `int`
 - `List`: growable list of fixed-size elements copied by value
-
+- `HashMap`: hash table using FNV-1a and linear probing
 ## Build and test
 
 ```sh
+make test
+
+# Manual tests for lists:
 clang -std=c17 -Wall -Wextra -Wpedantic int_list.c test_int_list.c -o test_int_list
 ./test_int_list
 

@@ -20,24 +20,26 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
+          llvm = pkgs.llvmPackages_22;
         in
         {
           default = pkgs.mkShell {
             packages =
               with pkgs;
               [
-                clang
-                clang-tools
+                llvm.clang
+                llvm.clang-tools
                 gnumake
-                lldb
+                llvm.lldb
               ]
               ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
                 valgrind
                 gdb
               ];
-
             shellHook = ''
-              echo "C dev shell: clang, make, clang-tools"
+              export CC=${llvm.clang}/bin/clang
+              echo "C dev shell: clang 22, make, clang-tools"
+              clang --version | head -n 1
             '';
           };
         }

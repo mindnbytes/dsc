@@ -57,3 +57,30 @@ void hm_free(HashMap *hm) {
   }
   free(hm->entries);
 }
+
+bool hm_put(HashMap *hm, const char *key, size_t value) {
+  if (!hm || !key) {
+    return false;
+  }
+  // has to be initialized (check cap)
+  // temporary init_with_cap, TODO: review!
+  if (hm->cap == 0) {
+    if (!hm_init_with_cap(hm, 16)) {
+      return false;
+    }
+  }
+  // need to check if it should be resized (check load factor)
+  // load factor 0.7
+
+  // first avoid wrap-around of size_t
+  if (hm->len >= SIZE_MAX / 10 || hm->cap >= SIZE_MAX / 7) {
+    // we are too large
+    return false;
+  }
+  if (hm->len * 10 >= hm->cap * 7) {
+    // TODO: attempt to resize!
+    return false;
+  }
+  // get hash
+  return true;
+}

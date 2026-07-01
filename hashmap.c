@@ -32,6 +32,14 @@ static char *cstr_dup(const char *s) {
   return copy;
 }
 
+// zero init
+void hm_init(HashMap *hm) {
+  hm->cap = 0;
+  hm->len = 0;
+  hm->entries = NULL;
+}
+
+// init with capacity
 bool hm_init_with_cap(HashMap *hm, size_t cap) {
   if (!hm || cap == 0) {
     return false;
@@ -58,6 +66,19 @@ void hm_free(HashMap *hm) {
   free(hm->entries);
 }
 
+static size_t hm_find_slot(HashMap *hm, const char *key, bool *found) {
+  size_t idx = hash_cstr(key) % hm->cap;
+  while (hm->entries[idx].occupied) {
+    if (strcmp(key, hm->entries[idx].key) == 0) {
+      *found = true;
+      return idx;
+    }
+    idx = (idx + 1) % hm->cap;
+  }
+  *found = false;
+  return idx;
+}
+
 bool hm_put(HashMap *hm, const char *key, size_t value) {
   if (!hm || !key) {
     return false;
@@ -73,14 +94,32 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
   // load factor 0.7
 
   // first avoid wrap-around of size_t
-  if (hm->len >= SIZE_MAX / 10 || hm->cap >= SIZE_MAX / 7) {
+  if ((hm->len + 1) >= SIZE_MAX / 10 || hm->cap >= SIZE_MAX / 7) {
     // we are too large
     return false;
   }
-  if (hm->len * 10 >= hm->cap * 7) {
+  if ((hm->len + 1) * 10 >= hm->cap * 7) {
     // TODO: attempt to resize!
     return false;
   }
-  // get hash
+  // find slot
+  bool found;
+  size_t idx = hm_find_slot(hm, key, &found);
+  // update value and return only if key is found
+  if (found) {
+    hm->entries[idx].value = value;
+    return true;
+  }
+  // copy key to own it, can still fail to allocate
+  char *key_copy = cstr_dup(key);
+  if (!key_copy) {
+    return false;
+  }
+
+  // update entry
+  hm->entries[idx].key = key_copy;
+  hm->entries[idx].value = value;
+  hm->entries[idx].occupied = true;
+  hm->len++;
   return true;
 }

@@ -64,6 +64,9 @@ void hm_free(HashMap *hm) {
     }
   }
   free(hm->entries);
+    hm->entries = NULL;
+    hm->len = 0;
+    hm->cap = 0;
 }
 
 // find slot for the key helper

@@ -29,7 +29,9 @@ typedef struct {
   size_t cap;
 } HashMap;
 
+void hm_init(HashMap *hm);
 bool hm_init_with_cap(HashMap *hm, size_t cap);
 void hm_free(HashMap *hm);
+bool hm_put(HashMap *hm, const char *key, size_t value);
 
 #endif

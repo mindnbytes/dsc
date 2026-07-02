@@ -66,6 +66,7 @@ void hm_free(HashMap *hm) {
   free(hm->entries);
 }
 
+// find slot for the key helper
 static size_t hm_find_slot(HashMap *hm, const char *key, bool *found) {
   size_t idx = hash_cstr(key) % hm->cap;
   while (hm->entries[idx].occupied) {
@@ -79,14 +80,48 @@ static size_t hm_find_slot(HashMap *hm, const char *key, bool *found) {
   return idx;
 }
 
+// internal inserter of owned key, helper for the resize
+// knows it can simply use pointer, no need to copy
+static void hm_insert_owned(HashMap *hm, char *key, size_t value) {
+  size_t idx = hash_cstr(key) % hm->cap;
+  while (hm->entries[idx].occupied) {
+    idx = (idx + 1) % hm->cap;
+  }
+  hm->entries[idx].key = key;
+  hm->entries[idx].value = value;
+  hm->entries[idx].occupied = true;
+  hm->len++;
+}
+
+// internal resize
+static bool hm_resize(HashMap *hm, size_t new_cap) {
+  size_t old_cap = hm->cap;
+  HmEntry *old_entries = hm->entries;
+
+  HmEntry *new_entries = calloc(new_cap, sizeof(*new_entries));
+  if (!new_entries) {
+    return false;
+  }
+  hm->entries = new_entries;
+  hm->cap = new_cap;
+  hm->len = 0;
+
+  for (size_t i = 0; i < old_cap; i++) {
+    if (old_entries[i].occupied) {
+      hm_insert_owned(hm, old_entries[i].key, old_entries[i].value);
+    }
+  }
+  free(old_entries);
+  return true;
+}
+
 bool hm_put(HashMap *hm, const char *key, size_t value) {
   if (!hm || !key) {
     return false;
   }
-  // has to be initialized (check cap)
-  // temporary init_with_cap, TODO: review!
+  // need non-null storage (check cap)
   if (hm->cap == 0) {
-    if (!hm_init_with_cap(hm, 16)) {
+    if (!hm_resize(hm, 16)) {
       return false;
     }
   }
@@ -99,8 +134,9 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
     return false;
   }
   if ((hm->len + 1) * 10 >= hm->cap * 7) {
-    // TODO: attempt to resize!
-    return false;
+    if (!hm_resize(hm, hm->cap * 2)) {
+      return false;
+    }
   }
   // find slot
   bool found;

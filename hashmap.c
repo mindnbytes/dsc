@@ -74,7 +74,7 @@ void hm_free(HashMap *hm) {
 }
 
 // find slot for the key helper
-static size_t hm_find_slot(HashMap *hm, const char *key, bool *found) {
+static size_t hm_find_slot(const HashMap *hm, const char *key, bool *found) {
   size_t idx = hash_cstr(key) % hm->cap;
   while (hm->entries[idx].occupied) {
     if (strcmp(key, hm->entries[idx].key) == 0) {
@@ -164,5 +164,23 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
   hm->entries[idx].value = value;
   hm->entries[idx].occupied = true;
   hm->len++;
+  return true;
+}
+
+// get
+bool hm_get(const HashMap *hm, const char *key, size_t *out_value) {
+  if (!hm || !key || !out_value) {
+    return false;
+  }
+  if (hm->len == 0) {
+    return false;
+  }
+  // look for the index
+  bool found;
+  size_t idx = hm_find_slot(hm, key, &found);
+  if (!found) {
+    return false;
+  }
+  *out_value = hm->entries[idx].value;
   return true;
 }

@@ -33,5 +33,6 @@ bool hm_init(HashMap *hm);
 bool hm_init_with_cap(HashMap *hm, size_t cap);
 void hm_free(HashMap *hm);
 bool hm_put(HashMap *hm, const char *key, size_t value);
+bool hm_get(const HashMap *hm, const char *key, size_t *out_value);
 
 #endif

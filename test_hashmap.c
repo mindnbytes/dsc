@@ -60,6 +60,21 @@ static void test_init(void) {
   assert(hm1.cap == 0 && hm1.len == 0 && hm1.entries == NULL);
 }
 
+// free
+// put after free -> ensure no use after free
+static void test_free_and_put(void) {
+  HashMap hm = {0};
+  assert(hm_put(&hm, "first", 1));
+  hm_free(&hm);
+
+  assert(hm_put(&hm, "second", 2));
+  assert_hm_non_empty_valid(&hm);
+  assert(hm.len == 1);
+  // TODO: test key:value
+
+  hm_free(&hm);
+}
+
 // put
 // nulls
 static void test_put_null(void) {
@@ -111,6 +126,7 @@ int main(void) {
   RUN_TEST(test_init_with_cap_fail);
   RUN_TEST(test_init_with_cap_success);
   RUN_TEST(test_init);
+  RUN_TEST(test_free_and_put);
   RUN_TEST(test_put_null);
   RUN_TEST(test_put_one);
   RUN_TEST(test_put_key_twice);

@@ -33,10 +33,14 @@ static char *cstr_dup(const char *s) {
 }
 
 // zero init
-void hm_init(HashMap *hm) {
+bool hm_init(HashMap *hm) {
+  if (!hm) {
+    return false;
+  }
   hm->cap = 0;
   hm->len = 0;
   hm->entries = NULL;
+  return true;
 }
 
 // init with capacity
@@ -64,9 +68,9 @@ void hm_free(HashMap *hm) {
     }
   }
   free(hm->entries);
-    hm->entries = NULL;
-    hm->len = 0;
-    hm->cap = 0;
+  hm->entries = NULL;
+  hm->len = 0;
+  hm->cap = 0;
 }
 
 // find slot for the key helper

@@ -50,10 +50,13 @@ static void test_init_with_cap_success(void) {
   hm_free(&hm);
 }
 
+// init tolerates null
+static void test_init_null(void) { assert(!hm_init(NULL)); }
+
 // ensure lazy init works as expected
 static void test_init(void) {
   HashMap hm;
-  hm_init(&hm);
+  assert(hm_init(&hm));
   assert(hm.cap == 0 && hm.len == 0 && hm.entries == NULL);
 
   HashMap hm1 = {0};
@@ -125,6 +128,7 @@ static void test_put_many(void) {
 int main(void) {
   RUN_TEST(test_init_with_cap_fail);
   RUN_TEST(test_init_with_cap_success);
+  RUN_TEST(test_init_null);
   RUN_TEST(test_init);
   RUN_TEST(test_free_and_put);
   RUN_TEST(test_put_null);

@@ -73,7 +73,11 @@ static void test_free_and_put(void) {
   assert(hm_put(&hm, "second", 2));
   assert_hm_non_empty_valid(&hm);
   assert(hm.len == 1);
-  // TODO: test key:value
+
+  size_t value;
+  assert(!hm_get(&hm, "first", &value));
+  assert(hm_get(&hm, "second", &value));
+  assert(value == 2);
 
   hm_free(&hm);
 }
@@ -93,7 +97,10 @@ static void test_put_one(void) {
   HashMap hm = {0};
   assert(hm_put(&hm, "hello", 42));
   assert_hm_non_empty_valid(&hm);
-  // TODO: ensure correct value!
+
+  size_t value;
+  assert(hm_get(&hm, "hello", &value));
+  assert(value == 42);
   hm_free(&hm);
 }
 
@@ -105,7 +112,10 @@ static void test_put_key_twice(void) {
   assert(hm_put(&hm, "hello", 999));
   assert_hm_non_empty_valid(&hm);
   assert(hm.len == 1);
-  // TODO: ensure correct value!
+
+  size_t value;
+  assert(hm_get(&hm, "hello", &value));
+  assert(value == 999);
   hm_free(&hm);
 }
 
@@ -120,7 +130,13 @@ static void test_put_many(void) {
     }
   }
   assert_hm_non_empty_valid(&hm);
-  // TODO: assert key value pairs
+  size_t value;
+  for (size_t i = 0; i < len; i++) {
+    if (snprintf(key, sizeof(key), "num: %zu", i) > 0) {
+      assert(hm_get(&hm, key, &value));
+      assert(value == i);
+    }
+  }
 
   hm_free(&hm);
 }

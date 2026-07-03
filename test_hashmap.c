@@ -150,6 +150,17 @@ static void test_put_many(void) {
   hm_free(&hm);
 }
 
+// can we handle empty string
+static void test_empty_string_key(void) {
+  HashMap hm = {0};
+  assert(hm_put(&hm, "", 42));
+  assert_hm_non_empty_valid(&hm);
+  size_t value;
+  assert(hm_get(&hm, "", &value));
+  assert(value == 42);
+  hm_free(&hm);
+}
+
 int main(void) {
   RUN_TEST(test_init_with_cap_fail);
   RUN_TEST(test_init_with_cap_success);
@@ -161,6 +172,7 @@ int main(void) {
   RUN_TEST(test_put_one);
   RUN_TEST(test_put_key_twice);
   RUN_TEST(test_put_many);
+  RUN_TEST(test_empty_string_key);
 
   puts("All tests passed.");
   return EXIT_SUCCESS;

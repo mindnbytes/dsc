@@ -82,6 +82,15 @@ static void test_free_and_put(void) {
   hm_free(&hm);
 }
 
+// free after free -> ensure no dangling pointer
+static void test_free_after_free(void) {
+  HashMap hm = {0};
+  assert(hm_put(&hm, "abc", 3));
+  hm_free(&hm);
+  hm_free(&hm);
+  assert(hm.cap == 0 && hm.len == 0 && hm.entries == NULL);
+}
+
 // put
 // nulls
 static void test_put_null(void) {
@@ -147,6 +156,7 @@ int main(void) {
   RUN_TEST(test_init_null);
   RUN_TEST(test_init);
   RUN_TEST(test_free_and_put);
+  RUN_TEST(test_free_after_free);
   RUN_TEST(test_put_null);
   RUN_TEST(test_put_one);
   RUN_TEST(test_put_key_twice);

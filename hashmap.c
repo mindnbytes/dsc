@@ -2,6 +2,7 @@
 with FNV-1a hash function; open address + linear probing
 */
 #include "hashmap.h"
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -132,6 +133,15 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
       return false;
     }
   }
+  // if key exist, we can update and return early
+  bool found;
+  size_t idx = hm_find_slot(hm, key, &found);
+  // update value and return only if key is found
+  if (found) {
+    hm->entries[idx].value = value;
+    return true;
+  }
+
   // need to check if it should be resized (check load factor)
   // load factor 0.7
 
@@ -145,14 +155,10 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
       return false;
     }
   }
-  // find slot
-  bool found;
-  size_t idx = hm_find_slot(hm, key, &found);
-  // update value and return only if key is found
-  if (found) {
-    hm->entries[idx].value = value;
-    return true;
-  }
+  // find index after resize
+  idx = hm_find_slot(hm, key, &found);
+  assert(!found); // can't bee true
+
   // copy key to own it, can still fail to allocate
   char *key_copy = cstr_dup(key);
   if (!key_copy) {

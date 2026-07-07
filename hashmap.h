@@ -29,6 +29,8 @@ typedef struct {
   size_t cap;
 } HashMap;
 
+// Initialize an uninitialized, zeroed, or already-freed map.
+// Do not call on a live map; use hm_free first to release owned keys/storage.
 bool hm_init(HashMap *hm);
 bool hm_init_with_cap(HashMap *hm, size_t cap);
 void hm_free(HashMap *hm);

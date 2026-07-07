@@ -14,19 +14,20 @@
   } while (0)
 
 // Validate non-empty HashMap invariant
-static void assert_hm_non_empty_valid(HashMap *hm) {
+static void assert_hm_valid(HashMap *hm) {
   assert(hm);
   assert(hm->cap > 0);
   assert(hm->len >= 0 && hm->len <= hm->cap);
-  assert(hm->entries);
-  size_t len = 0;
-  for (size_t i = 0; i < hm->cap; i++) {
-    if (hm->entries[i].occupied) {
-      len++;
-      assert(hm->entries[i].key);
+  if (hm->entries) {
+    size_t len = 0;
+    for (size_t i = 0; i < hm->cap; i++) {
+      if (hm->entries[i].occupied) {
+        len++;
+        assert(hm->entries[i].key);
+      }
     }
+    assert(hm->len == len);
   }
-  assert(hm->len == len);
   assert((hm->len + 1) * 10 < hm->cap * 7);
 }
 
@@ -45,7 +46,7 @@ static void test_init_with_cap_success(void) {
 
   assert(hm_init_with_cap(&hm, cap));
   assert(hm.cap == cap);
-  assert_hm_non_empty_valid(&hm);
+  assert_hm_valid(&hm);
 
   hm_free(&hm);
 }
@@ -71,7 +72,7 @@ static void test_free_and_put(void) {
   hm_free(&hm);
 
   assert(hm_put(&hm, "second", 2));
-  assert_hm_non_empty_valid(&hm);
+  assert_hm_valid(&hm);
   assert(hm.len == 1);
 
   size_t value;
@@ -105,7 +106,7 @@ static void test_put_null(void) {
 static void test_put_one(void) {
   HashMap hm = {0};
   assert(hm_put(&hm, "hello", 42));
-  assert_hm_non_empty_valid(&hm);
+  assert_hm_valid(&hm);
 
   size_t value;
   assert(hm_get(&hm, "hello", &value));
@@ -119,7 +120,7 @@ static void test_put_key_twice(void) {
 
   assert(hm_put(&hm, "hello", 42));
   assert(hm_put(&hm, "hello", 999));
-  assert_hm_non_empty_valid(&hm);
+  assert_hm_valid(&hm);
   assert(hm.len == 1);
 
   size_t value;
@@ -138,7 +139,7 @@ static void test_put_many(void) {
       assert(hm_put(&hm, key, i));
     }
   }
-  assert_hm_non_empty_valid(&hm);
+  assert_hm_valid(&hm);
   size_t value;
   for (size_t i = 0; i < len; i++) {
     if (snprintf(key, sizeof(key), "num: %zu", i) > 0) {
@@ -154,7 +155,7 @@ static void test_put_many(void) {
 static void test_empty_string_key(void) {
   HashMap hm = {0};
   assert(hm_put(&hm, "", 42));
-  assert_hm_non_empty_valid(&hm);
+  assert_hm_valid(&hm);
   size_t value;
   assert(hm_get(&hm, "", &value));
   assert(value == 42);

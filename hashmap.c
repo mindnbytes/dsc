@@ -75,17 +75,28 @@ void hm_free(HashMap *hm) {
 }
 
 // find slot for the key helper
-static size_t hm_find_slot(const HashMap *hm, const char *key, bool *found) {
+// defensive against full table, will return false only if looking for index
+// iteration reached hm->cap
+static bool hm_find_slot(const HashMap *hm, const char *key, size_t *ret_ix,
+                         bool *found) {
   size_t idx = hash_cstr(key) % hm->cap;
+  // harden against potential infinite loop
+  size_t cnt = 0;
   while (hm->entries[idx].occupied) {
     if (strcmp(key, hm->entries[idx].key) == 0) {
       *found = true;
-      return idx;
+      *ret_ix = idx;
+      return true;
     }
     idx = (idx + 1) % hm->cap;
+    cnt++;
+    if (cnt >= hm->cap) {
+      return false;
+    }
   }
   *found = false;
-  return idx;
+  *ret_ix = idx;
+  return true;
 }
 
 // internal inserter of owned key, helper for the resize
@@ -135,7 +146,10 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
   }
   // if key exist, we can update and return early
   bool found;
-  size_t idx = hm_find_slot(hm, key, &found);
+  size_t idx;
+  if (!hm_find_slot(hm, key, &idx, &found)) {
+    return false;
+  }
   // update value and return only if key is found
   if (found) {
     hm->entries[idx].value = value;
@@ -156,7 +170,9 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
     }
   }
   // find index after resize
-  idx = hm_find_slot(hm, key, &found);
+  if (!hm_find_slot(hm, key, &idx, &found)) {
+    return false;
+  }
   assert(!found); // can't bee true
 
   // copy key to own it, can still fail to allocate
@@ -183,7 +199,10 @@ bool hm_get(const HashMap *hm, const char *key, size_t *out_value) {
   }
   // look for the index
   bool found;
-  size_t idx = hm_find_slot(hm, key, &found);
+  size_t idx;
+  if (!hm_find_slot(hm, key, &idx, &found)) {
+    return false;
+  }
   if (!found) {
     return false;
   }

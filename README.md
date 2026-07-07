@@ -10,7 +10,14 @@ Minimal C implementations of common data structures for learning C engineering.
 
 ## Build and test
 
+On MacOS ensure
 ```sh
+clang --version >= 22
+```
+or
+
+```sh
+nix develop
 make test
 ```
 

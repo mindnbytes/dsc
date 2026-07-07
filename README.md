@@ -6,18 +6,12 @@ Minimal C implementations of common data structures for learning C engineering.
 
 - `IntList`: growable list of `int`
 - `List`: growable list of fixed-size elements copied by value
-- `HashMap`: hash table using FNV-1a and linear probing
+- `HashMap`: string-keyed hash table using FNV-1a and linear probing; owns copied keys and stores `size_t` values
+
 ## Build and test
 
 ```sh
 make test
-
-# Manual tests for lists:
-clang -std=c17 -Wall -Wextra -Wpedantic int_list.c test_int_list.c -o test_int_list
-./test_int_list
-
-clang -std=c17 -Wall -Wextra -Wpedantic list.c test_list.c -o test_list
-./test_list
 ```
 
 ## Notes
@@ -25,3 +19,5 @@ clang -std=c17 -Wall -Wextra -Wpedantic list.c test_list.c -o test_list
 This project favors simple, readable C over clever abstractions.
 
 `List` stores shallow byte copies. If an element contains pointers, the pointed-to data remains owned by the caller.
+
+`HashMap` owns its copied keys. Call `hm_free` before reinitializing a live map.

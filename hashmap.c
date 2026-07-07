@@ -112,17 +112,33 @@ static void hm_insert_owned(HashMap *hm, char *key, size_t value) {
   hm->len++;
 }
 
-// checks if map should grow, writes ret_new_cap if true
-static bool hm_should_grow(const HashMap *hm, size_t *ret_new_cap) {
+typedef enum { HM_GROW_NO, HM_GROW_YES, HM_GROW_ERR } HmGrowResult;
+
+// checks if map should grow, writes ret_new_cap if yes
+// ERR on sizt_t wrap around
+static HmGrowResult hm_should_grow(const HashMap *hm, size_t *ret_new_cap) {
   if (hm->cap == 0) {
     *ret_new_cap = 16;
-    return true;
+    return HM_GROW_YES;
   }
-  if ((hm->len + 1) * 10 >= hm->cap * 7) {
-    *ret_new_cap = hm->cap * 2;
-    return true;
+  if (hm->len >= SIZE_MAX - 1) {
+    return HM_GROW_ERR;
   }
-  return false;
+  size_t next_len = hm->len + 1;
+  if (next_len > SIZE_MAX / 10 || hm->cap > SIZE_MAX / 7) {
+    return HM_GROW_ERR;
+  }
+
+  if (next_len * 10 < hm->cap * 7) {
+    return HM_GROW_NO;
+  }
+
+  if (hm->cap > SIZE_MAX / 2) {
+    return HM_GROW_ERR;
+  }
+
+  *ret_new_cap = hm->cap * 2;
+  return HM_GROW_YES;
 }
 
 // internal resize
@@ -151,10 +167,9 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
   if (!hm || !key) {
     return false;
   }
-  size_t new_cap;
   // need non-null storage (check cap)
-  if (hm_should_grow(hm, &new_cap)) {
-    if (!hm_resize(hm, new_cap)) {
+  if (hm->cap == 0) {
+    if (!hm_init_with_cap(hm, 16)) {
       return false;
     }
   }
@@ -170,18 +185,14 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
     return true;
   }
 
-  // need to check if it should be resized (check load factor)
-  // load factor 0.7
-
-  // first avoid wrap-around of size_t
-  if ((hm->len + 1) >= SIZE_MAX / 10 || hm->cap >= SIZE_MAX / 7) {
-    // we are too large
+  // need to check if it should be resized
+  size_t new_cap;
+  HmGrowResult grow = hm_should_grow(hm, &new_cap);
+  if (grow == HM_GROW_ERR) {
     return false;
   }
-  if (hm_should_grow(hm, &new_cap)) {
-    if (!hm_resize(hm, new_cap)) {
-      return false;
-    }
+  if (grow && !hm_resize(hm, new_cap)) {
+    return false;
   }
   // find index after resize
   if (!hm_find_slot(hm, key, &idx, &found)) {

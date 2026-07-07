@@ -112,6 +112,19 @@ static void hm_insert_owned(HashMap *hm, char *key, size_t value) {
   hm->len++;
 }
 
+// checks if map should grow, writes ret_new_cap if true
+static bool hm_should_grow(const HashMap *hm, size_t *ret_new_cap) {
+  if (hm->cap == 0) {
+    *ret_new_cap = 16;
+    return true;
+  }
+  if ((hm->len + 1) * 10 >= hm->cap * 7) {
+    *ret_new_cap = hm->cap * 2;
+    return true;
+  }
+  return false;
+}
+
 // internal resize
 static bool hm_resize(HashMap *hm, size_t new_cap) {
   size_t old_cap = hm->cap;
@@ -138,9 +151,10 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
   if (!hm || !key) {
     return false;
   }
+  size_t new_cap;
   // need non-null storage (check cap)
-  if (hm->cap == 0) {
-    if (!hm_resize(hm, 16)) {
+  if (hm_should_grow(hm, &new_cap)) {
+    if (!hm_resize(hm, new_cap)) {
       return false;
     }
   }
@@ -164,8 +178,8 @@ bool hm_put(HashMap *hm, const char *key, size_t value) {
     // we are too large
     return false;
   }
-  if ((hm->len + 1) * 10 >= hm->cap * 7) {
-    if (!hm_resize(hm, hm->cap * 2)) {
+  if (hm_should_grow(hm, &new_cap)) {
+    if (!hm_resize(hm, new_cap)) {
       return false;
     }
   }
